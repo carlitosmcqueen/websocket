@@ -17,16 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("views"));
 
-const mensajes = [{
-    email: "pablo",
-    msj: "hola mundo"
-}, {
-    email: "jose",
-    msj: "hola coder"
-}, {
-    email: "fernando",
-    msj: "hola todos"
-}]
+const mensajes = []
 
 const hbs= handlebars.engine({
     extname: "hbs",
@@ -38,21 +29,28 @@ app.engine("hbs",hbs)
 
 app.set("view engine","hbs")
 
-app.get("/",(req,res) => {
-    res.render("main", {layout:"principal"})
+app.get("/",async (req,res) => {
+    res.render("main", {layout:"principal",compras:await db.getAll()})
 })
 
-io.on("connection",(socket)=>{
+io.on("connection",async (socket)=>{
     console.log("conectado")
+
     socket.emit("mensajes",mensajes)
+    socket.emit("productos", await db.getAll())
 
     socket.on("new_msj",(data)=>{
-        console.log("data")
         mensajes.push(data)
         io.sockets.emit("mensajes",mensajes)
     })
+    socket.on("new_producto",async (prod)=>{
+        await db.save(prod)
+
+        const productos = await db.getAll()
+        io.sockets.emit("productos",productos)
+    })
 })
 
-app.listen(8080, () => {
+httpServer.listen(8080, () => {
     console.log(`HBS iniciado`)
 })
