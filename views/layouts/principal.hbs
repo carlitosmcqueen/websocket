@@ -1,0 +1,35 @@
+<html>
+
+{{> head}}
+
+<body>
+
+    <div class="container">
+        {{> header}}
+        <main>
+          
+          <div class="card-body" data-mdb-perfect-scrollbar="true" style=" height: 400px; overflow-y:scroll;" id="mensajes-chat"></div>
+
+            <form onsubmit= "return enviarMensaje(event)">
+                <div class="chat-message clearfix">
+                    <div class="input-group mb-0">
+                        <div class="input-group-append">
+                            <input id="email" type="email" class="form-control" placeholder="email" />
+                            <input id="chat_mensaje" type="text" class="form-control" placeholder="Mensaje..." />
+                        </div>
+                        <input id="enviar_msj" type="submit" class="form-control" placeholder="Enviar mensaje" />
+                    </div>
+                </div>
+            </form>
+            </div>
+
+        </main>
+
+    </div>
+    <script src="socket.io/socket.io.js"></script>
+    <script src="../index.js"></script>
+</body>
+
+
+
+</html>
