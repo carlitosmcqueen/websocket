@@ -1,73 +1,58 @@
-const express = require('express')
-const handlebars = require("express-handlebars")
-const app = express()
-
+const express = require("express");
+const handlebars = require("express-handlebars");
+const app = express();
 const fs = require("fs");
-const fsPromise = fs.promises;
-
-const db = require("./funciones")
-const DB = new db("./Data/productos.json");
+const DB = require("./funciones")
+const db = new DB("./Data/productos.json");
 
 
-const {Server: SocketServer} = require('socket.io')
-const {Server: HTTPServer} = require('http')
+const { Server: HTTPServer } = require("http");
+const { Server: SocketServer } = require("socket.io");
 
-const httpServer = new HTTPServer(app)
-const io = new SocketServer(httpServer)
+const httpServer = new HTTPServer(app);
 
+const io = new SocketServer(httpServer);
 
-app.use(express.urlencoded({extended:true}))
-app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static("views"));
 
-
-let mensajes = [{
-    email: "pablo@gmmail.com",
+const mensajes = [{
+    email: "pablo",
     msj: "hola mundo"
 }, {
-    email: "jose@gmmail.com",
+    email: "jose",
     msj: "hola coder"
 }, {
-    email: "fernando@gmmail.com",
+    email: "fernando",
     msj: "hola todos"
 }]
 
-app.use(express.static("views"))
-
-const hbs = handlebars.engine({
+const hbs= handlebars.engine({
     extname: "hbs",
-    layoutsDir:__dirname + "/views/layouts",
-    defaultLayout: "principal",
-
-});
-
-app.engine("hbs",hbs)
-
-app.set('view engine', 'hbs')
-
-
-app.set("views", __dirname + "/views");
-app.set("view engine", "hbs");
-
-
-io.on("connection", (socket) => {
-    console.log("cliente conectado")
-    socket.emit("new-message",mensajes)
-
-    socket.on("new-message",(data) => {
-        console.log(data)
-        mensajes.push(data)
-        io.sockets.emit("new-message", mensajes)
-
-    })
-
-})
-
-app.get("/",(req, res)=>{
-    res.render("main",{layout: "principal"})
+    layoutsDir: "./views/layouts"
     
 })
 
+app.engine("hbs",hbs)
+
+app.set("view engine","hbs")
+
+app.get("/",(req,res) => {
+    res.render("main", {layout:"principal"})
+})
+
+io.on("connection",(socket)=>{
+    console.log("conectado")
+    socket.emit("mensajes",mensajes)
+
+    socket.on("new_msj",(data)=>{
+        console.log("data")
+        mensajes.push(data)
+        io.sockets.emit("mensajes",mensajes)
+    })
+})
 
 app.listen(8080, () => {
-    console.log(`tarea websocket iniciado`)
+    console.log(`HBS iniciado`)
 })
