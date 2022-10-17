@@ -112,6 +112,4 @@ class Datos {
     }
 }
 
-
-
 module.exports = Datos;

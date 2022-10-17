@@ -35,10 +35,9 @@ app.get("/",async (req,res) => {
 
 io.on("connection",async (socket)=>{
     console.log("conectado")
-
     socket.emit("mensajes",mensajes)
     socket.emit("productos", await db.getAll())
-
+    
     socket.on("new_msj",(data)=>{
         mensajes.push(data)
         io.sockets.emit("mensajes",mensajes)
