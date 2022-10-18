@@ -1,17 +1,22 @@
-const express = require("express");
-const handlebars = require("express-handlebars");
+import express from 'express';
+import handlebars from "express-handlebars"
 const app = express();
-const fs = require("fs");
-const DB = require("./funciones")
-const db = new DB("./Data/productos.json");
+
+import DBcontainer from "./connection/funciones.js"
+
+import mysqlconnection from "./connection/db.js"
+import sqliteConfig from "./connection/sqlite3.js"
+sqliteConfig.connection.filename = "./DB/ecommerce.sqlite"
 
 
-const { Server: HTTPServer } = require("http");
-const { Server: SocketServer } = require("socket.io");
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+ 
+const httpServer = createServer(app); 
+const io = new Server(httpServer);
 
-const httpServer = new HTTPServer(app);
-
-const io = new SocketServer(httpServer);
+const DBMensajes =  new DBcontainer(sqliteConfig, 'mensajes');
+const DBProductos =  new DBcontainer(mysqlconnection, 'productos');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -26,29 +31,29 @@ const hbs= handlebars.engine({
 })
 
 app.engine("hbs",hbs)
-
 app.set("view engine","hbs")
 
-app.get("/",async (req,res) => {
-    res.render("main", {layout:"principal",compras:await db.getAll()})
+app.get("/", async (req,res) => {
+    res.render("main", {layout:"principal",compras: await DBProductos.getAll()})
 })
 
-io.on("connection",async (socket)=>{
-    console.log("conectado")
-    socket.emit("mensajes",mensajes)
-    socket.emit("productos", await db.getAll())
-    
-    socket.on("new_msj",(data)=>{
+io.on("connection", async (socket)=>{
+    console.log("sea conectado el cliente")
+    socket.emit("new_msj",mensajes)
+    socket.on("new_msj",async (data)=>{
+        console.log(data)
+        await DBMensajes.save(data)
         mensajes.push(data)
-        io.sockets.emit("mensajes",mensajes)
+        io.sockets.emit("new_msj",mensajes)
     })
-    socket.on("new_producto",async (prod)=>{
-        await db.save(prod)
-
-        const productos = await db.getAll()
-        io.sockets.emit("productos",productos)
+    socket.emit("new_producto", await DBProductos.getAll())
+    socket.on("new_producto", async (prod)=>{
+        await DBProductos.save(prod)
+        const productos = await DBProductos.getAll()
+        io.sockets.emit("new_producto",productos)
     })
 })
+
 
 httpServer.listen(8080, () => {
     console.log(`HBS iniciado`)
