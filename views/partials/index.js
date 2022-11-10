@@ -1,26 +1,5 @@
 const socket = io.connect();
 
-socket.on("new_msj", (data) => {
-  const authorSchema = new normalizr.schema.Entity("author")
-  const msjSchema = new normalizr.schema.Entity("msj")
-  const schemaCompleto = new normalizr.schema.Entity("chat",{
-    author: authorSchema,
-    msj: msjSchema
-  })
-  const DataDenormalizada = normalizr.denormalize(data.normalizedData.result,[schemaCompleto],data.normalizedData.entities)
-  console.log(DataDenormalizada)
-  render(DataDenormalizada)
-  
-});
-
-// function render(data){
-//   const html = data.map(elem => `<div>
-//   <span style="font-weight: bold;color:blue;font-size: 25px;">${elem.author.id}</span>
-//   <span style="font-size: 15px;color:brown">${elem.date}</span>
-//   <p style="color: green;font-size:20px"> ${elem.msj.msj}</p>
-//   </div>`).join(' ');
-//   document.getElementById('mensajes-chat').innerHTML = html; 
-// }
 
 
 function render(data){
